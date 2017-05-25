@@ -1,0 +1,52 @@
+webextension - https://developer.mozilla.org/en-US/Add-ons/WebExtensions
+steal audiosaver
+
+maybe do the ctrl+seek refresh first?	
+	-refresh buffer with ctrl+click that is
+
+
+
+structure:
+	-workers?
+		-new worker for every site*tab*?
+			-workers don't use same memory space so could work?
+	
+	-other ideas...
+		-start with ctrl click refresh addon?
+
+
+ctrl click refresh addon:
+	-fully reset buffer on ctrl click seek
+	-seek to part
+	-start buffering from there
+	-customize button to reset? e.g. alt+click etc.
+
+
+start off easy:
+	-button to start or stop video playback
+		-onclick -> log id or something
+		-then do document.HTMLvid...etc.
+
+
+fully functional ctrl clicker needs:
+	-apparently content script to seek and background script to detect onclick?
+
+
+to work on:
+	-does mediaSource need to be toggled on at start or smtn?
+	-sourcebuffer does who what now?
+		-sourcebuffer.abort
+	-in short: mediasource, sourcebuffer
+	-HTMLMediaElement.captureStream--------------------------------//check this out
+
+
+problem: can't unlisten ctrl+seeks. ~~ "fixed"
+	why?
+		new instance every time i sendMessage
+			so can't detach
+
+
+
+
+make clear console addon
+	press button->console.clear()

@@ -46,7 +46,12 @@ problem: can't unlisten ctrl+seeks. ~~ "fixed"
 			so can't detach
 
 
-
+ideas for everyone:
 
 make clear console addon
 	press button->console.clear()
+		clear on reload
+
+make html 5 video player addon
+	loop from second x to y
+		additional menu to right click "loop" with '+' and '-' to 

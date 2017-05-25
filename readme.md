@@ -1,5 +1,5 @@
 ## MEDIA RELOAD
 
-Hold control/command and seek video/audio to reset its buffer.
+Hold control, or another key of choice, and seek video/audio to reset its buffer.
 
-Does not work on all pages unfortunately.
+Mac users should probably rebind the key in the preferences.

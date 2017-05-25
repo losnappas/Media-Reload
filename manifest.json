@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Media Reload",
-  "version": "1.0",
+  "version": "0.5",
 
   "description": "Refresh video and audio.",
   "homepage_url": "https://github.com/losnappas",
@@ -26,10 +26,8 @@
     "default_title": "Turn on Media Reload"
   },
 
-  "web_accessible_resources": [
-    "icons/close-48.png",
-    "icons/close-96.png",
-    "icons/close.png"
-  ]
+  "options_ui": {
+    "page": "options/options.html"
+  }
 
 }

@@ -28,6 +28,7 @@ function updateIcon() {
 // }
 
 function abortListener(){
+  window.injected=false;
   // console.log('abortListener');
   // console.log(`reload: ${reload}`, reload);
   if (reload){
@@ -55,20 +56,33 @@ function abortListener(){
 function buttonListener(){
   reload = !reload;
   // console.log(reload);
+  injector();
   abortListener();
 }
 
-function msg(msg){
-  // console.log('msg');
+injector = ()=>{
+  // console.log("injected", window.injected);
+  if(!window.injected){
     browser.tabs.executeScript(null, { 
         file: "/content_scripts/reload.js" 
       });
+    window.injected=true; 
+  }
+};
+
+function msg(msg){
+  // console.log('msg');
+
+
+
     var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 
     gettingActiveTab.then((tabs) => {
         browser.tabs.sendMessage(tabs[0].id, {command: msg});
       });
 }
+
+
 
 //get preferences
 var getting = browser.storage.local.get("reload");
@@ -77,3 +91,5 @@ getting.then(setCurrentChoice, onError);
 browser.tabs.onUpdated.addListener(abortListener);
 
 browser.browserAction.onClicked.addListener(buttonListener); //worked with button
+
+browser.webNavigation.onCommitted.addListener(injector);

@@ -8,27 +8,20 @@ var wait = false;
 var waitToTimeout = false;
 var interval;
 
-//bind the listener so it can be removed when button is pressed again...
-//--i sure hope there's a better solution than this out there . . .
-if (!this.controlDownListenerVar) 
-	this.controlDownListenerVar = this.controlDown/*.bind(this)*/;
-if (!this.keyUpListenerVar)
-	this.keyUpListenerVar = this.keyUpListener;
-if (!this.reloadVar)
-	this.reloadVar = this.reload;
+
 
 
 function reload(request, sender, sendResponse){
 	if (request.command==='reload'){
 		// console.log('reload');
 
-		document.addEventListener('keydown', this.controlDownListenerVar  /*controlDown*/);
-		document.addEventListener('keyup', this.keyUpListenerVar);
+		document.addEventListener('keydown', controlDown);
+		document.addEventListener('keyup', keyUpListener);
 	}
 	else if (request.command==='cancel')
 	{
-		document.removeEventListener('keydown', this.controlDownListenerVar);
-		document.removeEventListener('keyup', this.keyUpListenerVar);
+		document.removeEventListener('keydown', controlDown);
+		document.removeEventListener('keyup', keyUpListener);
 		// console.log('cancel');
 	}
 	else
@@ -57,24 +50,39 @@ function seeking(e){
 	media.src = '';
 	media.src = src;
 	// console.log('seeking')	;
-	wait=true;
+	// wait=true;
 }
+
+
 
 function controlDown(e){
 	// console.log('controlDown');
 	if (e.key===key/*'Control' || e.key==='Command'*/){
-		// if (media===null){
-		//  media = document.querySelector('video') || document.querySelector('audio'); // how to catch multiple/embed/not-playing players?
-		// }
+
+		document.onclick = (event) => {
+			// console.log("onclick");
+			if(event.target.tagName.toLowerCase()==='video' || event.target.tagName.toLowerCase()==='audio'){
+				media = event.target;
+				// console.log("inside onclick if");
+			}
+		}
+
 
 		if (!wait){
+			wait=true;
+			// media.seeking = seeking('1');
+			// console.log("seeking inside wait");
 			media.addEventListener('seeking', seeking);
 		}
 
 		//so user can hold control and reload once a second
 		if (media.readyState===3 || media.readyState===4) { // have some future content loaded (3) OR if it's small/near end have everything loaded (4)
 			if (!waitToTimeout) //is it okay to set another timeout? essentially this is a manually made interval
-				interval = setTimeout(()=>{wait=false; waitToTimeout=false;/* console.log("go")*/}, 1000);
+				interval = setTimeout(()=>{
+						wait=false;
+						waitToTimeout=false;
+						// console.log("go");
+					}, 2000);
 			waitToTimeout=true;
 		}
 	}
@@ -85,10 +93,8 @@ function controlDown(e){
 /*
 Assign reload() as a listener for messages from the extension.
 */
-if (!browser.runtime.onMessage.hasListener(this.reloadVar)){
-	// console.log('test');
-	browser.runtime.onMessage.addListener(this.reloadVar);
-}
+if (!browser.runtime.onMessage.hasListener(reload))
+	browser.runtime.onMessage.addListener(reload);
 
 
 //get the button-to-hold preference

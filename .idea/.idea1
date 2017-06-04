@@ -16,11 +16,11 @@ structure:
 
 
 ctrl click refresh addon:
-	-fully reset buffer on ctrl click seek
-	-seek to part
-	-start buffering from there
-	-customize button to reset? e.g. alt+click etc.
-
+		-fully reset buffer on ctrl click seek
+		-seek to part
+		-start buffering from there
+		-customize button to reset? e.g. alt+click etc.
+	-change to right click context menu itme instead
 
 start off easy:
 	-button to start or stop video playback
@@ -44,6 +44,7 @@ problem: can't unlisten ctrl+seeks. ~~ "fixed"
 	why?
 		new instance every time i sendMessage
 			so can't detach
+		reason was rly injecting content script many times.
 
 
 ideas for everyone:
@@ -52,10 +53,18 @@ make clear console addon
 	press button->console.clear()
 		clear on reload
 
+// done -> custom looper
 make html 5 video player addon
 	loop from second x to y
 		additional menu to right click "loop" with '+' and '-' to 
+//end done
 
 bitcoin->eur right click menu thing like translate addon
 
+
+location spoofer (youtube twitter etc)
+
+current problem_____________________________________________________________
+	context menu attaches to all media elements and refreshes them all instead of the one clicked.
+		no "seeking" track -> everything gets refreshed.
 

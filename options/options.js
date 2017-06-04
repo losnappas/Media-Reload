@@ -1,10 +1,18 @@
 var reload = document.querySelector("#reloader");
 
 function saveOptions(e){
+	var choice = document.querySelector('input[name=choice]:checked');
 	e.preventDefault();
-	browser.storage.local.set({
+	//console.log("FROM OPTIONS: ", choice.value);
+	var storingSettings = browser.storage.local.set({
 		reloadButton: reload.value
+		,
+		reloadUseWay: choice.value
 	});
+	storingSettings.then(() => {
+		//console.log("sending message from OPTIONS");
+		browser.runtime.sendMessage({command: "optionsChanged"});
+	}, (err)=>{console.error(err)});
 }
 
 function restoreOptions(){
@@ -12,6 +20,14 @@ function restoreOptions(){
 	gettingItem.then((res)=> {
 		reload.value = res.reloadButton || 'Control';
 	});
+
+	
+	var gettingChoice = browser.storage.local.get("reloadUseWay");
+	gettingChoice.then((res) => {
+		if (res.reloadUseWay === 'holding')
+			document.getElementById('holding').checked = true;
+	});
+
 }
 
 

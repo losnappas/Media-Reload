@@ -1,2 +1,5 @@
 *.zip
 Session.vim
+.idea
+web-ext-artifacts
+

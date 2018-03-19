@@ -8,14 +8,41 @@
 <body>
   <form>
   	<input type="radio" name="choice" id="context" value="context" checked> Context menu
-  	<input type="radio" name="choice" id="holding" value="holding"> Holding a button
+  	<input type="radio" name="choice" id="click" value="click"> Click (after pressing browser action)
 	<br/>
-  <label>The button you want to use
-  	<input type="text" id="reloader" readonly >
+	<br/>
+	<div><span>Things to reload:</span><br/>
+		<table>
+		<tbody>
+		<tr>
+			<td>
+			<label>
+			<input type="checkbox" name="target" value="audio" checked>Audio
+			</label>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<label>
+			<input type="checkbox" name="target" value="image" checked>Image
+			</label>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<label>
+			<input type="checkbox" name="target" value="video" checked>Video
+			</label>
+			</td>
+		</tr>
+		</tbody>
+		</table>		
+	</div>
   	<button type="submit">Save</button>
-	</label>
   </form>
-	<p>Refresh tabs after changing options if you want this to work.</p>
+	<p>Please note that some websites have special intricacies. They might give you an error after X refreshes, for example. It is nothing to worry about.</p>
+	<a href="https://addons.mozilla.org/en-US/firefox/addon/mediareload/">On addons.mozilla.org</a>
+
   <script src="options.js"></script>
 </body>
 

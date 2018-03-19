@@ -2,9 +2,9 @@
 
   "manifest_version": 2,
   "name": "Media Reload",
-  "version": "0.7",
+  "version": "2.0",
 
-  "description": "Refresh video and audio.",
+  "description": "Refresh audio, images, and video.",
   "homepage_url": "https://github.com/losnappas/Media-Reload",
   "icons": {
     "16": "icons/icon-on.svg",
@@ -15,8 +15,6 @@
   "permissions": [
     "activeTab",
     "storage",
-    "<all_urls>",
-    "webNavigation",
     "contextMenus"
   ],
 

@@ -1,13 +1,14 @@
-var reload = document.querySelector("#reloader");
 
 function saveOptions(e){
 	var choice = document.querySelector('input[name=choice]:checked');
+	var targets = document.querySelectorAll('input[name=target]:checked');
+	var contexts = [];
+	targets.forEach(val => contexts.push(val.value));
 	e.preventDefault();
 	//console.log("FROM OPTIONS: ", choice.value);
 	var storingSettings = browser.storage.local.set({
-		reloadButton: reload.value
-		,
-		reloadUseWay: choice.value
+		reloadUseWay: choice.value,
+		contexts: contexts
 	});
 	storingSettings.then(() => {
 		//console.log("sending message from OPTIONS");
@@ -16,21 +17,15 @@ function saveOptions(e){
 }
 
 function restoreOptions(){
-	var gettingItem = browser.storage.local.get("reloadButton");
-	gettingItem.then((res)=> {
-		reload.value = res.reloadButton || 'Control';
-	});
-
-	
+		
 	var gettingChoice = browser.storage.local.get("reloadUseWay");
 	gettingChoice.then((res) => {
-		if (res.reloadUseWay === 'holding')
-			document.getElementById('holding').checked = true;
+		if (res.reloadUseWay === 'click')
+			document.getElementById('click').checked = true;
 	});
 
 }
 
 
-reload.onkeydown = (e) => {reload.value=e.key;}
 document.addEventListener('DOMContentLoaded', restoreOptions);
 document.querySelector("form").addEventListener("submit", saveOptions);

@@ -1,26 +1,10 @@
-const ACTIVE_TITLE = "Hold control and seek";
-const INACTIVE_TITLE = "Turn on Media Reload";
+const ACTIVE_TITLE = "Now click on a media element to reload it";
+const INACTIVE_TITLE = "Activate Reload for current tab";
 const ICON_ON = "icons/icon-on.svg";
 const ICON_OFF = "icons/icon-off.svg";
 
 var useWay = null;
-
-var reload = null; //the var for addon on/off
-function setCurrentChoice(result)
-  {
-  // //console.log('restoreOptions');
-    reload = result.reload || false;
-
-    //only attach the listeners for page changing if the addon is turned on.
-	////console.log("outside reload&&holding setCurChoice");
-    if(reload){
-	////console.log("inside reload&&holding setCurChoice");
-      //if page is changing need to inject the content script again
-      browser.webNavigation.onBeforeNavigate.addListener(() => {window.injected=false;});
-      // inject the at onCompleted or iframes will be missed script and start the listener
-      browser.webNavigation.onCompleted.addListener(abortListener);
-     }
-  }
+var reload=false;
 
 function onError(error)
   {
@@ -32,133 +16,96 @@ function updateIcon() {
     path: reload ? ICON_ON : ICON_OFF,
   });
   browser.browserAction.setTitle({
-    title: reload ? ACTIVE_TITLE : INACTIVE_TITLE,
+    title: useWay!=='click' ? 'Open Media Reload options page' : reload ? ACTIVE_TITLE : INACTIVE_TITLE,
   });
 }
-  
 
-function abortListener(){
-  if(!window.injected){
-	//console.log("injecting from abort");
-    inject();
-  }
-
-  // window.injected=false;
-  // //console.log('abortListener');
-  // //console.log(`reload: ${reload}`, reload);
-  if (reload){
-     //console.log('reloading');
-    msg('reload');
-  } else {
-    // //console.log('cancel');
-    msg('cancel');
-  }
-  if (reload===null) {
-    console.error('Media Reload error, reload null: restoreOptions bugged.');
-  }
-  else{
-    this.updateIcon();
-  }
-
-
-  //save preferred setting
-  browser.storage.local.set({
-      reload: reload
-    });
-}
-
-function buttonListener(){
-  reload = !reload;
-	optionsChanged('first', null, null);
- // //console.log(reload);
-  abortListener();
-}
-
-inject = ()=>{
-  // //console.log("injected", window.injected);
-
-	//console.log("useWay:", useWay);
-  // if(!window.injected){
-	//if the use has opted to use a key+button
-	if(useWay === 'holding'){
-		//console.log("INSIDE HOLDING");
-	    browser.tabs.executeScript(null, { 
-	        file: "/content_scripts/reload.js",
-	        allFrames: true,
-	        runAt: "document_idle"
-	      });
-	}
-	//if the user opted to use context menu item
-	else if(useWay === 'context'){
-		//console.log("INSIDE CONTEXT");
-		browser.tabs.executeScript(null, {
-			file: "/content_scripts/reloadContextMenu.js",
-			allFrames: true,
-			runAt: "document_idle"
+//click method does this
+function inject  (){
+	if (useWay === 'click'){
+		reload = !reload;
+		updateIcon();
+		browser.tabs.executeScript({
+			file: "/content_scripts/reloadClick.js",
+			allFrames: true
 		});
 	}
 	else {
-		console.error("reloadListener inject something went wrong");
+		browser.runtime.openOptionsPage();
+		//console.error("reloadListener inject something went wrong");
 	}
-    window.injected=true;
-};
-
-function msg(msg){
-  // //console.log('msg');
-
-    var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
-
-    gettingActiveTab.then((tabs) => {
-        browser.tabs.sendMessage(tabs[0].id, {command: msg});
-      });
 }
 
-reloadUseWay = (result) => {
-	//console.log("RELOADUSEWAY", result.reloadUseWay);
+// contextMenu method does this
+function doThings(info, tab){
+	// console.log("hi?", info, tab)
+	// it doesn't matter how many times the script is injected into the page. The script doesn't leave anything behind after executing.
+  	browser.tabs.executeScript({
+		file: "/content_scripts/reloadContextMenu.js",
+		frameId: info.frameId
+	})
+	.then( () => browser.tabs.sendMessage(tab.id, {url: info.srcUrl, mediaType: info.mediaType}) )
+	.catch( (err)=> console.error("reloadListener error:", err)	);	
+	
+}
+
+
+function reloadUseWay (result)  {
+	// console.log("RELOADUSEWAY", result.reloadUseWay);
 	useWay = result.reloadUseWay || 'context';	
-	//get preferences
-	var getting = browser.storage.local.get("reload");
-	getting.then(setCurrentChoice, onError);
 
 	//if it doesn't exist or already exists then it pops an error message but who cares rly.
 	//console.log(reload);
-	if(useWay === 'context' && reload)
+	if(useWay === 'context')
 	{	
-		//console.log("inside 'context' in reloadUseWay");
-		if(!window.injected)
-			inject();
-		browser.contextMenus.create({
-			id: "reload",
-			title: "Reload",
-			contexts: ["audio", "video"],
-			onclick: () => {
-				msg('clickedReload');
-			}
-		});
+		let contexts = result.contexts || ["audio", "video", "image"];
+		browser.contextMenus.remove("reload").then(() => {
+			browser.contextMenus.create({
+				id: "reload",
+				title: "Reload",
+				contexts: contexts,
+				onclick: doThings
+			});
+		}).catch(e => console.log("Media reload: 'reloadUseWay' error.",e));
+		reload=true;
 	}
 	else
 	{
+		reload = false;
+		//trying to remove a non-existing context menu item is ok
 		browser.contextMenus.remove("reload");
+	}
+
+	updateIcon();
+}
+
+function afterReloadRepaint  (request) {
+	if(request.message && request.message === 'reloadClicked'){
+		reload = !reload;
+		updateIcon();
+	}
+}
+
+
+function optionsChanged (request, sender, sendResponse)  {
+	// console.log("optionschanged");
+	if(request === 'first' || (request.command != null && request.command === 'optionsChanged')){
+		var gettingUseWay = browser.storage.local.get();
+		gettingUseWay.then(reloadUseWay, onError);
 	}
 
 }
 
-
-
-(optionsChanged = (request, sender, sendResponse) => {
-	//console.log("optionschanged");
-	if(request === 'first' || request.command === 'optionsChanged'){
-		var gettingUseWay = browser.storage.local.get("reloadUseWay");
-		gettingUseWay.then(reloadUseWay, onError);
-	}
-
-})('first', null, null);
+optionsChanged('first', null, null);
 
 if(!browser.runtime.onMessage.hasListener(optionsChanged))
 	browser.runtime.onMessage.addListener(optionsChanged);
-// turn the addon on/off
-browser.browserAction.onClicked.addListener(buttonListener); //worked with button
 
-// if the user turns the addon on and changes tab need to reinject
-// -- 2nd thought: not worth my time to implement --
-// browser.tabs.onActivated.addListener(()=>{//console.log("hi"); inject();});
+
+//listener for browser action reloadClick method -message
+if(!browser.runtime.onMessage.hasListener(afterReloadRepaint))
+	browser.runtime.onMessage.addListener(afterReloadRepaint);
+
+
+browser.browserAction.onClicked.addListener(inject); //worked with button
+

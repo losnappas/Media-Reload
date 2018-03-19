@@ -6,12 +6,12 @@ var reload = (e) => {
 		e.stopPropagation();
 	}
 	browser.storage.local.get('contexts').then(({contexts}) => {
+		if (contexts==null) {
+			contexts=["audio","img","video"];
+		}
 		let imgidx = contexts.indexOf('image');
 		if (imgidx !== -1) {
 			contexts[imgidx]="img";
-		}
-		if (contexts==null) {
-			contexts=["audio","img","video"];
 		}
 		if (contexts.indexOf(tag) !== -1)//tag === 'video' || tag === 'audio') 
 		{
